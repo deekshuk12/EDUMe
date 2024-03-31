@@ -76,7 +76,7 @@ st.write(f"You may be affected by qualities similar to those experiencing {disab
 ##############################################################################################
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="API_KEY")
 
 messages = []
 system_msg = f"You are a special needs tutor teaching {name} who is {age} years old. They have trouble learning the conventional way and have {disability}. They need you, a special tutor, to help them with their learning."
@@ -106,7 +106,7 @@ content = st.text_input("What would you like to learn today?")
 st.write("We believe that the following breakdown of educational content would help you learn best: \n\n")
 
 
-api_key = 'AIzaSyAhVyAGLIpRWjkKO_wdXHuLrXULzNK_bqc'
+api_key = 'API_KEY'
 youtube = build('youtube', 'v3', developerKey=api_key)
 
 request = youtube.search().list(
