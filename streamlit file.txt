@@ -1,4 +1,4 @@
-strrimport streamlit as st
+import streamlit as st
 import os
 
 st.title('📚🌐EduMe.ai')
@@ -76,7 +76,7 @@ st.write(f"You may be affected by qualities similar to those experiencing {disab
 ##############################################################################################
 from openai import OpenAI
 
-client = OpenAI(api_key="API_KEY")
+client = OpenAI(api_key="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")
 
 messages = []
 system_msg = f"You are a special needs tutor teaching {name} who is {age} years old. They have trouble learning the conventional way and have {disability}. They need you, a special tutor, to help them with their learning."
@@ -103,42 +103,102 @@ from googleapiclient.discovery import build
 
 content = st.text_input("What would you like to learn today?")
 
+quiz = False
 st.write("We believe that the following breakdown of educational content would help you learn best: \n\n")
 
+while quiz == False:
 
-api_key = 'API_KEY'
-youtube = build('youtube', 'v3', developerKey=api_key)
+    api_key = 'AIzaSyAhVyAGLIpRWjkKO_wdXHuLrXULzNK_bqc'
+    youtube = build('youtube', 'v3', developerKey=api_key)
 
-request = youtube.search().list(
+    request = youtube.search().list(
     part="snippet",
     q=content,  
     maxResults= video,
     type="video"
-)
+    )
 
-response = request.execute()
+    response = request.execute()
 
 
-for item in response['items']:
-    title = item['snippet']['title']
-    video_id = item['id']['videoId']
-    video_url = f"https://www.youtube.com/watch?v={video_id}"
+    for item in response['items']:
+        title = item['snippet']['title']
+        video_id = item['id']['videoId']
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
 
     thumbnail_url = item['snippet']['thumbnails']['high']['url']
-    
+
     st.markdown("___")
     st.subheader("▶️ Video Resources:")
     st.write(f"Title: {title}")
     st.write(f"Video URL: {video_url}") 
     st.write("\n")
 
-message =  f"Provide a description to the person that is easy to understand and takes into account their {disability}. Make sure to explain the concept in a way that they can understand. Make the description of {content} only {sentences} number of sentences."
-messages.append({"role": "user", "content": message})
-response = client.chat.completions.create(model="gpt-3.5-turbo",
-messages=messages)
-content = response.choices[0].message.content
+    message =  f"Provide a description to the person that is easy to understand and takes into account their {disability}. Make sure to explain the concept in a way that they can understand. Make the description of {content} only {sentences} number of sentences."
+    messages.append({"role": "user", "content": message})
+    response = client.chat.completions.create(model="gpt-3.5-turbo",
+    messages=messages)
+    content = response.choices[0].message.content
+# text to speech functionality
+    from google.cloud import texttospeech
 
-st.markdown("___")
-st.subheader("✍️Written Resources:")
-st.write(content)
-st.write("Thank you for using our services. We hope we were of assistance of you today!")
+    client2 = texttospeech.TextToSpeechClient()
+
+    synthesis_input = texttospeech.SynthesisInput(text=content)
+
+    voice = texttospeech.VoiceSelectionParams(
+        language_code="en-US", ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+    )
+
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.MP3
+    )
+
+    response = client2.synthesize_speech(
+        input=synthesis_input, voice=voice, audio_config=audio_config
+    )
+
+    with open("output.mp3", "wb") as out:
+        out.write(response.audio_content)
+
+    # end of text to speech functionality
+
+    message = f"""
+    Generate a quiz based on {content}. Create two true or false questions related to the content. Present the quiz in the following format:
+
+    Question 1: [content of question 1]
+    [answer 1 (T or F)]
+    Question 2: [content of question 2]
+    [answer 2 (T or F)]
+
+    Ensure that:
+    - The first and third lines display the questions only.
+    - The second and fourth lines display the answers as either 'T' or 'F', nothing else.
+    """
+    messages.append({"role": "user", "content": message})
+    response = client.chat.completions.create(model="gpt-3.5-turbo",
+    messages=messages)
+    content = response.choices[0].message.content
+
+    lines = content.split('\n')
+
+    q1 = lines[0]
+    q2 = lines [2]
+    ans1 = lines[1]
+    ans2 = lines[3]
+
+    user_ans1 = input(q1)
+    user_ans2 = input(q2)
+
+    if user_ans1!= ans1 or user_ans2!=ans2:
+        quiz = False
+        print("\nLooks like you did not answer both of the questions correctly. Let's try a new approach to learning this topic.\n")
+        quiz_results = f"{name} did not learn effectively and got some quiz questions on this {content} wrong. In {sentences} sentences, explain the {content} in a better way for {name} with {disability} to understand. For etxra context, they had difficulty answer {q1} and {q2}"
+
+    else:
+        quiz = True
+
+    st.markdown("___")
+    st.subheader("✍️Written Resources:")
+    st.write(content)
+    st.write("Thank you for using our services. We hope we were of assistance of you today!")
