@@ -46,7 +46,7 @@ print(f"you may be affected by qualities similar to those who are suffering from
 
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="API_KEY")
 
 messages = []
 system_msg = f"You are a special needs tutor teaching {name} who is {age} years old. They have trouble learning the conventional way and have {disability}. They need you, a special tutor, to help them with their learning."
@@ -78,7 +78,7 @@ quiz = False
 print("We believe that the following breakdown of educational content would help you learn best: \n\n")
 while quiz == False:
 
-    api_key = 'AIzaSyAhVyAGLIpRWjkKO_wdXHuLrXULzNK_bqc'
+    api_key = "API_KEY"
     youtube = build('youtube', 'v3', developerKey=api_key)
 
     request = youtube.search().list(
